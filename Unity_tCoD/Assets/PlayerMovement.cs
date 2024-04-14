@@ -47,6 +47,12 @@ public class PlayerMovement : MonoBehaviour
         }
 
         UpdateAnimationState();// Calling UpdateAnimationState
+
+        if(IsGrounded())
+        {
+            Debug.Log("Grounded");
+        }
+        else { Debug.Log("Not"); }
     }
 
     // Animation Run/Idle
