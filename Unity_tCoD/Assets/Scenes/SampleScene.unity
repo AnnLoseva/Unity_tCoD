@@ -138,9 +138,9 @@ GameObject:
   - component: {fileID: 70571835}
   - component: {fileID: 70571834}
   - component: {fileID: 70571833}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: TIlemap
-  m_TagString: Untagged
+  m_TagString: JumpableGround
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -10687,7 +10687,7 @@ GameObject:
   - component: {fileID: 2131530155}
   - component: {fileID: 2131530157}
   - component: {fileID: 2131530158}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
