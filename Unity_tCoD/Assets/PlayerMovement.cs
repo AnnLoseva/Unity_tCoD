@@ -28,7 +28,7 @@ public class PlayerMovement : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void Update()    
     {
         // Getting X input
         dirX = Input.GetAxisRaw("Horizontal");
@@ -37,7 +37,7 @@ public class PlayerMovement : MonoBehaviour
         rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
 
         // Jump
-        if (Input.GetKeyDown("space") && IsGrounded())
+        if (Input.GetButtonDown("Jump") && IsGrounded())
         {
 
 
@@ -75,26 +75,26 @@ public class PlayerMovement : MonoBehaviour
             state = MovementState.idle;
         }
 
-        //Jump
+        //jump
         if (rb.velocity.y > 0.1f)
         {
             state = MovementState.jumping;
         }
 
-        //Fall
+        //fall
         else if (rb.velocity.y < -0.1f)
         {
             state = MovementState.falling;
         }
 
 
-        // Changing Animations
+       // Changing Animations
         anim.SetInteger("state", (int)state);
     }
 
     private bool IsGrounded()
     {
-        return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, 0.1f, jumpableGround);
+        return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, 0.3f, jumpableGround);
     }
 
 }
