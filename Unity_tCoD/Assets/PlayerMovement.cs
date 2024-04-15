@@ -46,7 +46,7 @@ public class PlayerMovement : MonoBehaviour
         rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
 
         UpdateAnimationState();// Calling UpdateAnimationState
-        //JumpsAndFloating();
+        JumpsAndFloating();
         WallClimb();
     }
 
