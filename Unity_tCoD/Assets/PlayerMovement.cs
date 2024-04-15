@@ -23,6 +23,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float airJumpForce = 15f; // Force of jumps in air
     [SerializeField] private float floatGravity = 2f; //Gravity while floating
     [SerializeField] private float regularGravity = 4f; // Regular gravity
+    [SerializeField] private float wallJumpHeight = 10f;
+    [SerializeField] private float wallJumpDirection = 10f;
     private enum MovementState { idle, running, jumping, falling } // Animation States
 
 
@@ -44,7 +46,7 @@ public class PlayerMovement : MonoBehaviour
         rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
 
         UpdateAnimationState();// Calling UpdateAnimationState
-        JumpsAndFloating();
+        //JumpsAndFloating();
         WallClimb();
     }
 
@@ -130,14 +132,30 @@ public class PlayerMovement : MonoBehaviour
     {
         if( Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.left, 0.3f, climbableWall) || Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.right, 0.3f, jumpableGround))
         {
-            rb.gravityScale = 0;
-            jumpCount = 0;
+            rb.gravityScale = floatGravity;
             dirY = Input.GetAxisRaw("Vertical");
 
             //Moving Horizontaly
-            if (dirY != 0)
+            if (dirY > 0.1f|| dirY < -0.1f)
             {
+                print("Moving");
                 rb.velocity = new Vector2(rb.velocity.x, dirY * moveSpeed);
+            } else { rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y); }
+
+            if(Input.GetButtonDown("Jump"))
+            {
+                if (Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.left, 0.3f, climbableWall))
+                    { 
+                    
+                    rb.velocity = new Vector2(wallJumpDirection, wallJumpHeight);
+                    print("left: " + rb.velocity);
+                }else if (Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.right, 0.3f, climbableWall))
+                {
+                   
+                    rb.velocity = new Vector2(-wallJumpDirection, wallJumpHeight); 
+                    print("right" + rb.velocity);
+                }
+
             }
 
         }
