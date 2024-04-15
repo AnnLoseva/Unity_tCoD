@@ -9,6 +9,7 @@ public class PlayerMovement : MonoBehaviour
     private Animator anim; //Animations
     private float dirX = 0f;  // Movement input
     private SpriteRenderer sprite; // 
+    private int jumpCount = 0; // Count of jumps in air
 
 
     [SerializeField] private AudioSource jumpSoundEffect;
@@ -16,6 +17,10 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private float moveSpeed = 7f; // Movement Speed
     [SerializeField] private float jumpForce = 20f; // Jump Force
+    [SerializeField] private int airJumpMaxNum = 1; // Max number of air jumps
+    [SerializeField] private float airJumpForce = 15f; // Force of jumps in air
+    [SerializeField] private float floatGravity = 2f; //Gravity while floating
+    [SerializeField] private float regularGravity = 4f; // Regular gravity
     private enum MovementState { idle, running, jumping, falling } // Animation States
 
 
@@ -36,23 +41,40 @@ public class PlayerMovement : MonoBehaviour
         //Moving Horizontaly
         rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
 
-        // Jump
+        // Regular Jump from Ground
         if (Input.GetButtonDown("Jump") && IsGrounded())
         {
-
-
+            jumpCount = 0;
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            jumpSoundEffect.Play();
-
+            //jumpSoundEffect.Play();
+            
+        } 
+        // Air Jump
+        else if (Input.GetButtonDown("Jump") && !IsGrounded() && jumpCount < airJumpMaxNum)
+        {
+            jumpCount++;
+            rb.velocity = new Vector2(rb.velocity.x, airJumpForce);
+            //jumpSoundEffect.Play();
+            
         }
+
+        // Floating
+        if ( Input.GetButton("Jump") && !IsGrounded() && rb.velocity.y < 0)
+        {
+            
+            rb.gravityScale = floatGravity;
+            if(Input.GetButtonDown("Jump"))
+            {
+                rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * 0.3f);
+            }
+        }
+        else if (!Input.GetButton("Jump") ||IsGrounded())
+        {
+            rb.gravityScale = regularGravity;
+        }
+
 
         UpdateAnimationState();// Calling UpdateAnimationState
-
-        if(IsGrounded())
-        {
-            Debug.Log("Grounded");
-        }
-        else { Debug.Log("Not"); }
     }
 
     // Animation Run/Idle
