@@ -8,12 +8,14 @@ public class PlayerMovement : MonoBehaviour
     private BoxCollider2D coll; // Collistion of Player
     private Animator anim; //Animations
     private float dirX = 0f;  // Movement input
+    private float dirY = 0f;  // Movement input
     private SpriteRenderer sprite; // 
     private int jumpCount = 0; // Count of jumps in air
 
 
     [SerializeField] private AudioSource jumpSoundEffect;
     [SerializeField] private LayerMask jumpableGround; // Ground Collision
+    [SerializeField] private LayerMask climbableWall; // Ground Collision
 
     [SerializeField] private float moveSpeed = 7f; // Movement Speed
     [SerializeField] private float jumpForce = 20f; // Jump Force
@@ -41,40 +43,9 @@ public class PlayerMovement : MonoBehaviour
         //Moving Horizontaly
         rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
 
-        // Regular Jump from Ground
-        if (Input.GetButtonDown("Jump") && IsGrounded())
-        {
-            jumpCount = 0;
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            //jumpSoundEffect.Play();
-            
-        } 
-        // Air Jump
-        else if (Input.GetButtonDown("Jump") && !IsGrounded() && jumpCount < airJumpMaxNum)
-        {
-            jumpCount++;
-            rb.velocity = new Vector2(rb.velocity.x, airJumpForce);
-            //jumpSoundEffect.Play();
-            
-        }
-
-        // Floating
-        if ( Input.GetButton("Jump") && !IsGrounded() && rb.velocity.y < 0)
-        {
-            
-            rb.gravityScale = floatGravity;
-            if(Input.GetButtonDown("Jump"))
-            {
-                rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * 0.3f);
-            }
-        }
-        else if (!Input.GetButton("Jump") ||IsGrounded())
-        {
-            rb.gravityScale = regularGravity;
-        }
-
-
         UpdateAnimationState();// Calling UpdateAnimationState
+        JumpsAndFloating();
+        WallClimb();
     }
 
     // Animation Run/Idle
@@ -118,6 +89,62 @@ public class PlayerMovement : MonoBehaviour
 
        // Changing Animations
         anim.SetInteger("state", (int)state);
+    }
+
+    private void JumpsAndFloating()
+    {
+        // Regular Jump from Ground
+        if (Input.GetButtonDown("Jump") && IsGrounded())
+        {
+            jumpCount = 0;
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            //jumpSoundEffect.Play();
+
+        }
+        // Air Jump
+        else if (Input.GetButtonDown("Jump") && !IsGrounded() && jumpCount < airJumpMaxNum)
+        {
+            jumpCount++;
+            rb.velocity = new Vector2(rb.velocity.x, airJumpForce);
+            //jumpSoundEffect.Play();
+
+        }
+
+        // Floating
+        if (Input.GetButton("Jump") && !IsGrounded() && rb.velocity.y < 0)
+        {
+
+            rb.gravityScale = floatGravity;
+            if (Input.GetButtonDown("Jump"))
+            {
+                rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * 0.3f);
+            }
+        }
+        else if (!Input.GetButton("Jump") || IsGrounded())
+        {
+            rb.gravityScale = regularGravity;
+        }
+    }
+
+    private void WallClimb()
+    {
+        if( Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.left, 0.3f, climbableWall) || Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.right, 0.3f, jumpableGround))
+        {
+            rb.gravityScale = 0;
+            jumpCount = 0;
+            dirY = Input.GetAxisRaw("Vertical");
+
+            //Moving Horizontaly
+            if (dirY != 0)
+            {
+                rb.velocity = new Vector2(rb.velocity.x, dirY * moveSpeed);
+            }
+
+        }
+        else
+        {
+            rb.gravityScale = regularGravity;
+        }
     }
 
     private bool IsGrounded()
