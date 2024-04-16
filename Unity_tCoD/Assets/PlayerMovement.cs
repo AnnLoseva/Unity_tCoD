@@ -212,23 +212,23 @@ public class PlayerMovement : MonoBehaviour
 
     private bool IsWalled()
     {
-        bool iswalled;
+        bool isWalled;
 
         if (Physics2D.OverlapCircle(wallCheck.position, 0.2f, jumpableGround))
         {
-            iswalled = true;
+            isWalled = true;
         }
 
         if (Physics2D.OverlapCircle(wallCheck.position, 0.2f, climbableWall)) 
         {
-            iswalled = true;
+            isWalled = true;
         }
         else
         {
-            iswalled = false;
+            isWalled = false;
         }
 
-        return iswalled;
+        return isWalled;
     }
 }
 
