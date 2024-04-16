@@ -17,7 +17,7 @@ public class PlayerMovement : MonoBehaviour
     private float wallJumpingTime = 0.2f;
     private int  wallJumpingDirection = 1;
     private float wallJumpingCounter = 0;
-    private float wallJumpingDuration = 0.4f;
+    private float wallJumpingDuration = 2f;
     private enum MovementState { idle, running, jumping, falling } // Animation States
 
 
@@ -56,7 +56,7 @@ public class PlayerMovement : MonoBehaviour
         dirX = Input.GetAxisRaw("Horizontal");
 
         //Moving Horizontaly
-        if (isWallSliding == false)
+        if (isWallSliding==false)
         {
             rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
         }
@@ -77,7 +77,7 @@ public class PlayerMovement : MonoBehaviour
         {
             state = MovementState.running;
             sprite.flipX = true;
-            wallCheck.localPosition = new Vector2(0.7f, 0);
+            wallCheck.localPosition = new Vector2(0.7f, 1);
         }
 
         //Left
@@ -85,7 +85,7 @@ public class PlayerMovement : MonoBehaviour
         {
             state = MovementState.running;
             sprite.flipX = false;
-            wallCheck.localPosition = new Vector2(-0.7f, 0);
+            wallCheck.localPosition = new Vector2(-0.7f, 1);
 
         }
 
@@ -153,10 +153,11 @@ public class PlayerMovement : MonoBehaviour
         {
             isWallSliding = true;
             rb.velocity = new Vector2(rb.velocity.x, Mathf.Clamp(rb.velocity.y, -wallSlidingSpeed, float.MaxValue));
-           // jumpCount = 0;
+           
         }
         else
         {
+            print("Not on Wall");
             isWallSliding = false;
             
         }
@@ -168,8 +169,8 @@ public class PlayerMovement : MonoBehaviour
         {
             isWallJumping = false;
             if(sprite.flipX == true)
-            { wallJumpingDirection = 1; }
-            else { wallJumpingDirection = -1; }
+            { wallJumpingDirection = -1; }
+            else { wallJumpingDirection = 1; }
 
             wallJumpingCounter = wallJumpingTime;
 
@@ -179,10 +180,10 @@ public class PlayerMovement : MonoBehaviour
             wallJumpingCounter = Time.deltaTime;
         }
 
-        if (Input.GetButtonDown("Jump") && wallJumpingCounter > 0f && isWallSliding == true)
+        if (Input.GetButtonDown("Jump") && isWallSliding == true)
         {
             isWallJumping = true;
-            rb.velocity = new Vector3(wallJumpingDirection * wallJumpingPower.x, wallJumpingPower.y,0);
+            rb.velocity = new Vector2(wallJumpingPower.x * wallJumpingDirection, wallJumpingPower.y);
             wallJumpingCounter = 0f;
             CancelInvoke(nameof(StopWallJumping));
         }
@@ -211,20 +212,25 @@ public class PlayerMovement : MonoBehaviour
 
     private bool IsWalled()
     {
-        bool isWalled = false;
+        bool iswalled;
 
-        if( Physics2D.OverlapCircle(wallCheck.position, 0.2f, jumpableGround))
+        if (Physics2D.OverlapCircle(wallCheck.position, 0.2f, jumpableGround))
         {
-            isWalled = true;
-        };
+            iswalled = true;
+        }
 
-        if(Physics2D.OverlapCircle(wallCheck.position, 0.2f, jumpableGround))
+        if (Physics2D.OverlapCircle(wallCheck.position, 0.2f, climbableWall)) 
         {
-            isWalled = true;
-        };
+            iswalled = true;
+        }
+        else
+        {
+            iswalled = false;
+        }
 
-        return isWalled;
+        return iswalled;
     }
-
 }
+
+
 
