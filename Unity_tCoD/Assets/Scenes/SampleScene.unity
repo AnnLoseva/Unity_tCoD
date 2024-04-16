@@ -4030,6 +4030,37 @@ MonoBehaviour:
   offsetY: 1
   speed: 0.01
   cam: {fileID: 519420031}
+--- !u!1 &1968727245
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1968727246}
+  m_Layer: 0
+  m_Name: WallCheck
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1968727246
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1968727245}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.641, y: -0.18, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2131530154}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2131530152
 GameObject:
   m_ObjectHideFlags: 0
@@ -4117,6 +4148,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 519420032}
+  - {fileID: 1968727246}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!50 &2131530155
@@ -4210,14 +4242,14 @@ MonoBehaviour:
   climbableWall:
     serializedVersion: 2
     m_Bits: 8
+  wallCheck: {fileID: 1968727246}
   moveSpeed: 7
   jumpForce: 20
-  airJumpMaxNum: 1
   airJumpForce: 15
+  airJumpMaxNum: 1
   floatGravity: 0.5
   regularGravity: 3
-  wallJumpHeight: 10
-  wallJumpDirection: 10
+  wallSlidingSpeed: 2
 --- !u!95 &2131530158
 Animator:
   serializedVersion: 5
