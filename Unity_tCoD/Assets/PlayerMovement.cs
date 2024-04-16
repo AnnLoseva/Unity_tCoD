@@ -13,6 +13,12 @@ public class PlayerMovement : MonoBehaviour
     private SpriteRenderer sprite; // 
     private int jumpCount = 0; // Count of jumps in air
     private bool isWallSliding = false; // Check of WallSliding
+    private bool isWallJumping = false;
+    private float wallJumpingTime = 0.2f;
+    private int  wallJumpingDirection = 1;
+    private float wallJumpingCounter = 0;
+    private float wallJumpingDuration = 0.4f;
+    private enum MovementState { idle, running, jumping, falling } // Animation States
 
 
 
@@ -31,12 +37,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float regularGravity = 4f; // Regular gravity
 
     [SerializeField] private float wallSlidingSpeed = 2f; // Speed of Wall Slide
+    [SerializeField] private Vector2 wallJumpingPower = new Vector2(20f, 16f);
 
-    
-
-
-    
-    private enum MovementState { idle, running, jumping, falling } // Animation States
 
 
     void Start()
@@ -54,11 +56,15 @@ public class PlayerMovement : MonoBehaviour
         dirX = Input.GetAxisRaw("Horizontal");
 
         //Moving Horizontaly
-        rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
+        if (isWallSliding == false)
+        {
+            rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
+        }
 
         UpdateAnimationState();// Calling UpdateAnimationState
-        JumpsAndFloating();
+        //JumpsAndFloating();
         WallSlide();
+        WallJump();
     }
 
     // Animation Run/Idle
@@ -71,6 +77,7 @@ public class PlayerMovement : MonoBehaviour
         {
             state = MovementState.running;
             sprite.flipX = true;
+            wallCheck.localPosition = new Vector2(0.7f, 0);
         }
 
         //Left
@@ -78,6 +85,7 @@ public class PlayerMovement : MonoBehaviour
         {
             state = MovementState.running;
             sprite.flipX = false;
+            wallCheck.localPosition = new Vector2(-0.7f, 0);
 
         }
 
@@ -104,40 +112,40 @@ public class PlayerMovement : MonoBehaviour
         anim.SetInteger("state", (int)state);
     }
 
-    private void JumpsAndFloating()
-    {
-        // Regular Jump from Ground
-        if (Input.GetButtonDown("Jump") && IsGrounded())
-        {
-            jumpCount = 0;
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            //jumpSoundEffect.Play();
+    //private void JumpsAndFloating()
+    //{
+    //    // Regular Jump from Ground
+    //    if (Input.GetButtonDown("Jump") && IsGrounded())
+    //    {
+    //        jumpCount = 0;
+    //        rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+    //        //jumpSoundEffect.Play();
 
-        }
-        // Air Jump
-        else if (Input.GetButtonDown("Jump") && !IsGrounded() && jumpCount < airJumpMaxNum)
-        {
-            jumpCount++;
-            rb.velocity = new Vector2(rb.velocity.x, airJumpForce);
-            //jumpSoundEffect.Play();
+    //    }
+    //    // Air Jump
+    //    else if (Input.GetButtonDown("Jump") && !IsGrounded() && jumpCount < airJumpMaxNum)
+    //    {
+    //        jumpCount++;
+    //        rb.velocity = new Vector2(rb.velocity.x, airJumpForce);
+    //        //jumpSoundEffect.Play();
 
-        }
+    //    }
 
-        // Floating
-        if (Input.GetButton("Jump") && !IsGrounded() && rb.velocity.y < 0)
-        {
+    //    // Floating
+    //    if (Input.GetButton("Jump") && !IsGrounded() && rb.velocity.y < 0)
+    //    {
 
-            rb.gravityScale = floatGravity;
-            if (Input.GetButtonDown("Jump"))
-            {
-                rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * 0.3f);
-            }
-        }
-        else if (!Input.GetButton("Jump") || IsGrounded())
-        {
-            rb.gravityScale = regularGravity;
-        }
-    }
+    //        rb.gravityScale = floatGravity;
+    //        if (Input.GetButtonDown("Jump"))
+    //        {
+    //            rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * 0.3f);
+    //        }
+    //    }
+    //    else if (!Input.GetButton("Jump") || IsGrounded())
+    //    {
+    //        rb.gravityScale = regularGravity;
+    //    }
+    //}
 
     private void WallSlide()
     {
@@ -145,15 +153,56 @@ public class PlayerMovement : MonoBehaviour
         {
             isWallSliding = true;
             rb.velocity = new Vector2(rb.velocity.x, Mathf.Clamp(rb.velocity.y, -wallSlidingSpeed, float.MaxValue));
-            //rb.gravityScale = 0;
+           // jumpCount = 0;
         }
         else
         {
             isWallSliding = false;
-            //rb.gravityScale = regularGravity;
+            
         }
     }
 
+    private void WallJump()
+    {
+        if(isWallSliding == true) 
+        {
+            isWallJumping = false;
+            if(sprite.flipX == true)
+            { wallJumpingDirection = 1; }
+            else { wallJumpingDirection = -1; }
+
+            wallJumpingCounter = wallJumpingTime;
+
+        }
+        else
+        {
+            wallJumpingCounter = Time.deltaTime;
+        }
+
+        if (Input.GetButtonDown("Jump") && wallJumpingCounter > 0f && isWallSliding == true)
+        {
+            isWallJumping = true;
+            rb.velocity = new Vector3(wallJumpingDirection * wallJumpingPower.x, wallJumpingPower.y,0);
+            wallJumpingCounter = 0f;
+            CancelInvoke(nameof(StopWallJumping));
+        }
+
+        if (sprite.flipX == true && wallJumpingDirection == -1 && isWallJumping)
+        {
+            sprite.flipX = false;
+        }
+        else if(sprite.flipX == false && wallJumpingDirection == 1 && isWallJumping)
+        {
+            sprite.flipX = true;
+        }
+
+        Invoke(nameof(StopWallJumping), wallJumpingDuration);
+    }
+    
+    private void StopWallJumping()
+    {
+       isWallJumping = false;
+    }
 
     private bool IsGrounded()
     {
