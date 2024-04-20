@@ -63,7 +63,7 @@ public class PlayerMovement : MonoBehaviour
 
         UpdateAnimationState();// Calling UpdateAnimationState
         JumpsAndFloating();
-        //WallJump();
+        WallJump();
     }
 
     // Animation Run/Idle
