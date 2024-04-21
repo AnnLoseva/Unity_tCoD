@@ -22,17 +22,20 @@ public class DialogueTrigger : MonoBehaviour
 
     private void Update()
     {
-        if(playerInRange)
+        if (playerInRange && !DialogueManager.GetInstance().dialogueIsPlaying)
         {
-            visualCue.SetActive(true);
-            if(Input.GetKeyDown("e"))
+            if (playerInRange)
             {
-                DialogueManager.GetInstance().EnterDialogueMode(inkJSON);
+                visualCue.SetActive(true);
+                if (Input.GetKeyDown("e"))
+                {
+                    DialogueManager.GetInstance().EnterDialogueMode(inkJSON);
+                }
             }
-        }
-        else
-        {
-            visualCue.SetActive(false);
+            else
+            {
+                visualCue.SetActive(false);
+            }
         }
     }
 

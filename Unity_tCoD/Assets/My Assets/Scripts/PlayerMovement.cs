@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.Tilemaps;
 using UnityEngine;
@@ -70,17 +71,12 @@ public class PlayerMovement : MonoBehaviour
             return; 
         }
 
-
-        // Getting X input
-        dirX = Input.GetAxisRaw("Horizontal");
-
-        //Moving Horizontaly
-        rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
-
+    
 
         UpdateAnimationState();// Calling UpdateAnimationState
         JumpsAndFloating();
         WallJump();
+        Moving();
     }
 
     // Animation Run/Idle
@@ -149,7 +145,7 @@ public class PlayerMovement : MonoBehaviour
             Invoke("StopWallJump", wallJumpDuration);
         }
         // Air Jump
-        else if (Input.GetButtonDown("Jump") && !IsGrounded() && jumpCount < airJumpMaxNum)
+        else if (Input.GetButtonDown("Jump") && !IsGrounded() && jumpCount < airJumpMaxNum && !isWalljumping && !isSliding)
         {
             jumpCount++;
             rb.velocity = new Vector2(rb.velocity.x, airJumpForce);
@@ -210,13 +206,34 @@ public class PlayerMovement : MonoBehaviour
         isWalljumping = false;
         canFlip = true;
     }
+
+    private void Moving()
+    {
+        if (!isWalljumping)
+        {
+            // Getting X input
+            dirX = Input.GetAxis("Horizontal");
+
+            //Moving Horizontaly
+            rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
+        }
+    }
+
+
+
     private bool IsGrounded()
     {
         return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, 0.3f, jumpableGround);
     }
     private bool IsWalled()
     {
-        return Physics2D.OverlapBox(wallCheck.position, new Vector2(0.3f, 1.6f), 0, climbableWall);
+       return Physics2D.OverlapBox(wallCheck.position, new Vector2(0.3f, 1.6f), 0, climbableWall);
+
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawLine(wallCheck.position, new Vector3(wallCheck.position.x + 3f, wallCheck.position.y, wallCheck.position.z));
     }
 }
 
