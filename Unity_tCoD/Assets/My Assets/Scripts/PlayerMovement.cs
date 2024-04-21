@@ -16,28 +16,39 @@ public class PlayerMovement : MonoBehaviour
     private int jumpCount = 0; // Count of jumps in air
     private enum MovementState { idle, running, jumping, falling } // Animation States
     public int direction;
-    
 
-    private bool isWallTouch;
-    private bool isSliding;
+
+    [Header("Walls")]
     [SerializeField] private float wallSlidingSpeed;
     [SerializeField] private float wallJumpDuration;
     [SerializeField] private Vector2 wallJumpForce;
+    [SerializeField] private Transform wallCheck; // Point of wallCheck
     private bool isWalljumping;
     private bool canFlip;
+    private bool isWallTouch;
+    private bool isSliding;
 
 
+    [Header("Audio")]
     [SerializeField] private AudioSource jumpSoundEffect;
+
+
+    [Header("LayerMasks")]
     [SerializeField] private LayerMask jumpableGround; // Ground Collision
     [SerializeField] private LayerMask climbableWall; // Ground Collision
-    [SerializeField] private Transform wallCheck; // Point of wallCheck
 
+
+    [Header("Move")]
     [SerializeField] private float moveSpeed = 7f; // Movement Speed
     [SerializeField] private float jumpForce = 20f; // Jump Force
 
+
+    [Header("Airjumps")]
     [SerializeField] private float airJumpForce = 15f; // Force of jumps in air
     [SerializeField] private int airJumpMaxNum = 1; // Max number of air jumps
 
+
+    [Header("Gravity")]
     [SerializeField] private float floatGravity = 2f; //Gravity while floating
     [SerializeField] private float regularGravity = 4f; // Regular gravity
 
@@ -54,6 +65,12 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (DialogueManager.GetInstance().dialogueIsPlaying)
+        { 
+            return; 
+        }
+
+
         // Getting X input
         dirX = Input.GetAxisRaw("Horizontal");
 
