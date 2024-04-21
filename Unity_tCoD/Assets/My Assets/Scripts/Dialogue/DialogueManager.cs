@@ -99,9 +99,9 @@ public class DialogueManager : MonoBehaviour
     private void DisplayChoices()
     {
         List<Choice> currentChoices = currentStory.currentChoices;
-        
+
         // Defencive check if UI can support the number of choices coming in
-        if(currentChoices.Count > choices.Length)
+        if (currentChoices.Count > choices.Length)
         {
             Debug.LogError("More choices were given then UI can support. Number of choices given:" + currentChoices.Count);
         }
@@ -109,7 +109,7 @@ public class DialogueManager : MonoBehaviour
         int index = 0;
         // enable ant initialize the choices up to the amoune of choices for this line of dialogue
 
-        foreach (Choice choice in currentChoices) 
+        foreach (Choice choice in currentChoices)
         {
             choices[index].gameObject.SetActive(true);
             choicesText[index].text = choice.text;
@@ -117,7 +117,7 @@ public class DialogueManager : MonoBehaviour
         }
 
         // go through the remaining choices the UI supports and make sure they're hidden
-        for (int i = index; i<choices.Length; i++)
+        for (int i = index; i < choices.Length; i++)
         {
             choices[i].gameObject.SetActive(false);
         }
@@ -131,10 +131,14 @@ public class DialogueManager : MonoBehaviour
 
         // Event System reaquires we clear it first, then wait
         // for at least one frame before we set current selected object.
-        //EventSystem.current.SetSelectedGameObject(null);
+
+
+        EventSystem.current.SetSelectedGameObject(null);
         yield return new WaitForEndOfFrame();
         EventSystem.current.SetSelectedGameObject(choices[0].gameObject);
     }
+
+
 
     public void MakeChoice(int choiceIndex)
     {
