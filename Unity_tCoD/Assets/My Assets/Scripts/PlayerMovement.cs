@@ -8,11 +8,13 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    #region Variables
+
     private Rigidbody2D rb; // RigidBody of Player
     private BoxCollider2D coll; // Collistion of Player
     private Animator anim; //Animations
     private float dirX = 0f;  // Movement input
-    //private float dirY = 0f;  // Movement input
+    private float dirY = 0f;  // Movement input
     private SpriteRenderer sprite; // 
     private int jumpCount = 0; // Count of jumps in air
     private enum MovementState { idle, running, jumping, falling } // Animation States
@@ -42,6 +44,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Move")]
     [SerializeField] private float moveSpeed = 7f; // Movement Speed
     [SerializeField] private float jumpForce = 20f; // Jump Force
+    [SerializeField] private float climbSpeed = 4f; // Speed of climbing
 
 
     [Header("Airjumps")]
@@ -53,7 +56,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float floatGravity = 2f; //Gravity while floating
     [SerializeField] private float regularGravity = 4f; // Regular gravity
 
-
+    #endregion Variables
 
     void Start()
     {
@@ -66,6 +69,7 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Move only if no dialogue is plaing
         if (DialogueManager.GetInstance().dialogueIsPlaying)
         { 
             return; 
@@ -73,60 +77,64 @@ public class PlayerMovement : MonoBehaviour
 
     
 
-        UpdateAnimationState();// Calling UpdateAnimationState
+        UpdateAnimationState();
         JumpsAndFloating();
         WallJump();
         Moving();
+        ClimbWall();
     }
 
     // Animation Run/Idle
     private void UpdateAnimationState()
     {
         MovementState state;
-       
-        
-        if (sprite.flipX) { direction = 1; 
-        }
-        else { direction = -1;}
+
 
         // Right
         if (dirX > 0f)
         {
             state = MovementState.running;
-            sprite.flipX = true;
-            wallCheck.localPosition = new Vector2(0.7f, 1);
+            if (!isWalljumping)
+            {
+                transform.localScale = new Vector3(-1, 1, 1);
+
+
+            }
         }
 
         //Left
         else if (dirX < 0f)
         {
             state = MovementState.running;
-            sprite.flipX = false;
-            wallCheck.localPosition = new Vector2(-0.7f, 1);
+            if (!isWalljumping)
+            {
+                transform.localScale = new Vector3(1, 1, 1);
 
+
+            }
+
+            //Idle
+            else
+            {
+                state = MovementState.idle;
+            }
+
+            //jump
+            if (rb.velocity.y > 0.1f)
+            {
+                state = MovementState.jumping;
+            }
+
+            //fall
+            else if (rb.velocity.y < -0.1f)
+            {
+                state = MovementState.falling;
+            }
+
+
+            // Changing Animations
+            anim.SetInteger("state", (int)state);
         }
-
-        //Idle
-        else
-        {
-            state = MovementState.idle;
-        }
-
-        //jump
-        if (rb.velocity.y > 0.1f)
-        {
-            state = MovementState.jumping;
-        }
-
-        //fall
-        else if (rb.velocity.y < -0.1f)
-        {
-            state = MovementState.falling;
-        }
-
-
-        // Changing Animations
-        anim.SetInteger("state", (int)state);
     }
 
     private void JumpsAndFloating()
@@ -139,12 +147,6 @@ public class PlayerMovement : MonoBehaviour
             //jumpSoundEffect.Play();
 
         }
-        else if (isSliding && Input.GetButtonDown("Jump"))
-        {
-            isWalljumping = true;
-            Invoke("StopWallJump", wallJumpDuration);
-        }
-        // Air Jump
         else if (Input.GetButtonDown("Jump") && !IsGrounded() && jumpCount < airJumpMaxNum && !isWalljumping && !isSliding)
         {
             jumpCount++;
@@ -169,6 +171,9 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+
+
+    private float timerWallJump;
     private void WallJump()
     {
         if (IsWalled() && !IsGrounded())
@@ -182,43 +187,63 @@ public class PlayerMovement : MonoBehaviour
 
         if(isSliding)
         {
+            // Air Jump
             rb.velocity = new Vector2(rb.velocity.x, Mathf.Clamp(rb.velocity.y, -wallSlidingSpeed, float.MaxValue));
+            if (Input.GetButtonDown("Jump")) 
+            {
+                isWalljumping = true;
+                dirX = 0;
+                rb.velocity = new Vector2(wallJumpForce.x * transform.localScale.x, wallJumpForce.y);
+                jumpCount = 0;
+                if (transform.localScale.x == 1)
+                {
+                    transform.localScale = new Vector3(-1, 1, 1);
+                }
+                else
+                { 
+                    transform.localScale = new Vector3(1, 1, 1); 
+                }
+
+            }
         }
         if(isWalljumping)
         {
-            
-            if(canFlip)
-            {
-                sprite.flipX = !sprite.flipX;
-                canFlip = false;
-                jumpCount = 0;
-            }
-            rb.velocity = new Vector2(wallJumpForce.x *direction , wallJumpForce.y);
-        }
-        //else 
-        //{
-        //    rb.velocity = new Vector2 (direction * moveSpeed, rb.velocity.y);
-        //}
-    }
 
-    private void StopWallJump()
-    {
-        isWalljumping = false;
-        canFlip = true;
+            if((timerWallJump += Time.deltaTime) >= wallJumpDuration)
+            {
+                if(IsWalled() || IsGrounded() || dirX > 0.1f || dirX < -0.1f)
+                {
+                    isWalljumping = false;
+                    timerWallJump = 0;
+                }
+            }
+           
+        }
+
     }
 
     private void Moving()
     {
+
+        // Getting X input
+        dirX = Input.GetAxisRaw("Horizontal");
+       
         if (!isWalljumping)
         {
-            // Getting X input
-            dirX = Input.GetAxis("Horizontal");
-
             //Moving Horizontaly
             rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
         }
     }
 
+    private void ClimbWall()
+    {
+        dirY = Input.GetAxis("Vertical");
+
+        if(IsWalled() && !IsGrounded() && dirY != 0f) 
+        {
+            rb.velocity = new Vector2(rb.velocity.x, dirY * climbSpeed);
+        }
+    }
 
 
     private bool IsGrounded()
@@ -230,11 +255,7 @@ public class PlayerMovement : MonoBehaviour
        return Physics2D.OverlapBox(wallCheck.position, new Vector2(0.3f, 1.6f), 0, climbableWall);
 
     }
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.DrawLine(wallCheck.position, new Vector3(wallCheck.position.x + 3f, wallCheck.position.y, wallCheck.position.z));
-    }
+  
 }
 
     
