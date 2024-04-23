@@ -19,6 +19,8 @@ public class PlayerMovement : MonoBehaviour
     private int jumpCount = 0; // Count of jumps in air
     private float runJumpTimer; // Timer of running for high jump
     private float varJumpForce; // Changable Jump Force
+    bool right = false;
+    public MovementForCamera cameraMovement;
     private enum MovementState { idle, running, jumping, falling } // Animation States
 
 
@@ -91,11 +93,12 @@ public class PlayerMovement : MonoBehaviour
     {
         MovementState state;
 
-
+        
         // Right
         if (dirX > 0f)
         {
             state = MovementState.running;
+
             if (!isWalljumping)
             {
                 transform.localScale = new Vector3(-1, 1, 1);
@@ -110,7 +113,7 @@ public class PlayerMovement : MonoBehaviour
                     varJumpForce = jumpForce;
                 }
 
-
+               
             }
         }
 
@@ -129,7 +132,10 @@ public class PlayerMovement : MonoBehaviour
                 {
                     varJumpForce = jumpForce;
                 }
-
+                if (right == true)
+                {
+                    right = false;
+                }
             }
         }
         //Idle
@@ -210,7 +216,6 @@ public class PlayerMovement : MonoBehaviour
 
         if(isSliding)
         {
-            // Air Jump
             rb.velocity = new Vector2(rb.velocity.x, Mathf.Clamp(rb.velocity.y, -wallSlidingSpeed, float.MaxValue));
             if (Input.GetButtonDown("Jump")) 
             {

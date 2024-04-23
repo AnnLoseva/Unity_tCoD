@@ -7,9 +7,12 @@ using UnityEngine.EventSystems;
 
 public class DialogueManager : MonoBehaviour
 {
+    #region Variables
     [Header("Dialogue UI")]
     [SerializeField] private GameObject dialoguePanel;
     [SerializeField] private TextMeshProUGUI dialogueText;
+    [SerializeField] private TextMeshProUGUI displayNameText;
+    [SerializeField] private Animator portraitAnimator;
     private Story currentStory;
     public bool dialogueIsPlaying;
 
@@ -18,6 +21,12 @@ public class DialogueManager : MonoBehaviour
     private TextMeshProUGUI[] choicesText;
     
     private static DialogueManager instance;
+
+    private const string SPEAKER_TAG = "speaker";
+    private const string PORTRAIT_TAG = "portrait";
+    private const string LAYOUT_TAG = "layout";
+
+    #endregion Variables
 
     private void Awake()
     {
@@ -89,6 +98,7 @@ public class DialogueManager : MonoBehaviour
             dialogueText.text = currentStory.Continue();
             // Display choices, if any, for this dialogue line
             DisplayChoices();
+            HandleTags(currentStory.currentTags);
         }
         else
         {
@@ -138,10 +148,49 @@ public class DialogueManager : MonoBehaviour
         EventSystem.current.SetSelectedGameObject(choices[0].gameObject);
     }
 
-
-
     public void MakeChoice(int choiceIndex)
     {
         currentStory.ChooseChoiceIndex(choiceIndex);
     }
+
+    private void HandleTags(List<string> currentTags)
+    {
+        foreach(string tag in currentTags)
+        {
+            string[] splitTag = tag.Split(':');
+            if(splitTag.Length < 2 ) 
+            {
+                Debug.LogError("Wrong tag: " + tag );
+            }
+
+            string tagKey = splitTag[0].Trim();
+            string tagValue = splitTag[1].Trim();
+
+            switch (tagKey)
+            {
+                case SPEAKER_TAG:
+                    
+                    displayNameText.text = tagValue;
+                    break;
+
+                case PORTRAIT_TAG:
+                    portraitAnimator.Play(tagValue);
+                    break;
+
+                case LAYOUT_TAG:
+                    break;
+
+                default:
+                    Debug.LogWarning("Tag came in but not being handled: " + tag);
+                    break;
+                    
+            }
+
+        }
+
+       
+
+    }
+
+
 }
