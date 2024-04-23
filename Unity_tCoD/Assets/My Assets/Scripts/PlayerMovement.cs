@@ -17,8 +17,9 @@ public class PlayerMovement : MonoBehaviour
     private float dirY = 0f;  // Movement input
     private SpriteRenderer sprite; // 
     private int jumpCount = 0; // Count of jumps in air
+    private float runJumpTimer; // Timer of running for high jump
+    private float varJumpForce; // Changable Jump Force
     private enum MovementState { idle, running, jumping, falling } // Animation States
-    public int direction;
 
 
     [Header("Walls")]
@@ -27,9 +28,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Vector2 wallJumpForce;
     [SerializeField] private Transform wallCheck; // Point of wallCheck
     private bool isWalljumping;
-    private bool canFlip;
-    private bool isWallTouch;
     private bool isSliding;
+    private float timerWallJump;
 
 
     [Header("Audio")]
@@ -44,6 +44,8 @@ public class PlayerMovement : MonoBehaviour
     [Header("Move")]
     [SerializeField] private float moveSpeed = 7f; // Movement Speed
     [SerializeField] private float jumpForce = 20f; // Jump Force
+    [SerializeField] private float runJumpTime = 1f; // Running time needed to jump higher
+    [SerializeField] private float highJumpModificator = 2f; // Modificator of high jump
     [SerializeField] private float climbSpeed = 4f; // Speed of climbing
 
 
@@ -99,6 +101,16 @@ public class PlayerMovement : MonoBehaviour
                 transform.localScale = new Vector3(-1, 1, 1);
 
 
+                if (IsGrounded() && (runJumpTimer += Time.deltaTime) >= runJumpTime)
+                {
+                    varJumpForce = jumpForce * highJumpModificator;
+                }
+                else
+                {
+                    varJumpForce = jumpForce;
+                }
+
+
             }
         }
 
@@ -109,15 +121,24 @@ public class PlayerMovement : MonoBehaviour
             if (!isWalljumping)
             {
                 transform.localScale = new Vector3(1, 1, 1);
-
+                if (IsGrounded() && (runJumpTimer += Time.deltaTime) >= runJumpTime)
+                {
+                    varJumpForce = jumpForce * highJumpModificator;
+                }
+                else
+                {
+                    varJumpForce = jumpForce;
+                }
 
             }
-
-            //Idle
-            else
-            {
-                state = MovementState.idle;
-            }
+        }
+        //Idle
+        else
+        {
+            state = MovementState.idle;
+            runJumpTimer = 0f;
+            varJumpForce = jumpForce;
+        }
 
             //jump
             if (rb.velocity.y > 0.1f)
@@ -135,15 +156,14 @@ public class PlayerMovement : MonoBehaviour
             // Changing Animations
             anim.SetInteger("state", (int)state);
         }
-    }
-
+    
     private void JumpsAndFloating()
     {
         // Regular Jump from Ground
         if (Input.GetButtonDown("Jump") && IsGrounded())
         {
             jumpCount = 0;
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            rb.velocity = new Vector2(rb.velocity.x, varJumpForce);
             //jumpSoundEffect.Play();
 
         }
@@ -169,11 +189,14 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.gravityScale = regularGravity;
         }
+
+        if(!IsGrounded())
+        {
+            runJumpTimer = 0;
+            varJumpForce = jumpForce;
+        }
     }
 
-
-
-    private float timerWallJump;
     private void WallJump()
     {
         if (IsWalled() && !IsGrounded())

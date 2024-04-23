@@ -9168,7 +9168,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d66cc6deba5d6754b9583e2ac7b03822, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  direction: 0
   wallSlidingSpeed: 2
   wallJumpDuration: 0.5
   wallJumpForce: {x: 10, y: 10}
@@ -9181,7 +9180,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   moveSpeed: 10
-  jumpForce: 20
+  jumpForce: 15
+  runJumpTime: 1
+  highJumpModificator: 1.5
   climbSpeed: 4
   airJumpForce: 15
   airJumpMaxNum: 1
