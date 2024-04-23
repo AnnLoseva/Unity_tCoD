@@ -12,9 +12,14 @@ public class DialogueManager : MonoBehaviour
     [SerializeField] private GameObject dialoguePanel;
     [SerializeField] private TextMeshProUGUI dialogueText;
     [SerializeField] private TextMeshProUGUI displayNameText;
-    [SerializeField] private Animator portraitAnimator;
+    [SerializeField] private Animator npcPortraitAnimator;
+    [SerializeField] private Animator playerPortraitAnimator;
+
     private Story currentStory;
     public bool dialogueIsPlaying;
+
+    [Header("Start and End Animations")]
+    [SerializeField] private Animator startAnimation;
 
     [Header("Choices UI")]
     [SerializeField] private GameObject[] choices;
@@ -23,7 +28,8 @@ public class DialogueManager : MonoBehaviour
     private static DialogueManager instance;
 
     private const string SPEAKER_TAG = "speaker";
-    private const string PORTRAIT_TAG = "portrait";
+    private const string NPC_PORTRAIT_TAG = "npcportrait";
+    private const string PLAYER_PORTRAIT_TAG = "playerportrait";
     private const string LAYOUT_TAG = "layout";
 
     #endregion Variables
@@ -46,7 +52,7 @@ public class DialogueManager : MonoBehaviour
     {
         dialogueIsPlaying = false;
         dialoguePanel.SetActive(false);
-
+        //StartDialogueAnimation();
         // get all the choices text
 
         choicesText = new TextMeshProUGUI[choices.Length];
@@ -97,6 +103,7 @@ public class DialogueManager : MonoBehaviour
             //Set text for current Dialogue line
             dialogueText.text = currentStory.Continue();
             // Display choices, if any, for this dialogue line
+            
             DisplayChoices();
             HandleTags(currentStory.currentTags);
         }
@@ -173,11 +180,16 @@ public class DialogueManager : MonoBehaviour
                     displayNameText.text = tagValue;
                     break;
 
-                case PORTRAIT_TAG:
-                    portraitAnimator.Play(tagValue);
+                case NPC_PORTRAIT_TAG:
+                    npcPortraitAnimator.Play(tagValue);
+                    break;
+
+                case PLAYER_PORTRAIT_TAG:
+                    playerPortraitAnimator.Play(tagValue);
                     break;
 
                 case LAYOUT_TAG:
+                    startAnimation.Play(tagValue);
                     break;
 
                 default:
@@ -191,6 +203,5 @@ public class DialogueManager : MonoBehaviour
        
 
     }
-
 
 }

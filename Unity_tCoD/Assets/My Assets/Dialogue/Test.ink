@@ -1,14 +1,17 @@
 ->main
 
 ===main===
-Hi! Do you wanna play? #speaker:Mike #portrait:Neutral_Rooth
-    *Yes!  #speaker:Mike #portrait:Happy_Rooth
-    #speaker:Mike #portrait:Happy_Rooth
-    Yey!!!! -> Ending 
-    *No    #speaker:Mike #portrait:Angry_Rooth 
-     #speaker:Mike #portrait:Angry_Rooth
-    WHYYYYYYYYYY   -> Ending 
+#speaker:Mike #npcportrait:Neutral_Rooth #layout:StartDialogue
+Hi! Do you wanna play? 
+    *Yes!  #speaker:Mike  #playerportrait:Happy_Rooth
+    Yey!!!!  #npcportrait:Happy_Rooth
+    -> Ending 
+    *No      #playerportrait:Angry_Rooth  
+    WHYYYYYYYYYY   #npcportrait:Angry_Rooth
+   -> Ending 
     
     
     ===Ending ===
+    
+    #layout:ReverseDialogue 
 ->END
