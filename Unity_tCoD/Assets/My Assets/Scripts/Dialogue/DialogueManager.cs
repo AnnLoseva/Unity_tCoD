@@ -1,6 +1,7 @@
 using Ink.Runtime;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -8,24 +9,29 @@ using UnityEngine.EventSystems;
 public class DialogueManager : MonoBehaviour
 {
     #region Variables
+
+    [Header("Params")]
+    [SerializeField] private float typingSpeed = 0.04f;
+
     [Header("Dialogue UI")]
     [SerializeField] private GameObject dialoguePanel;
     [SerializeField] private TextMeshProUGUI dialogueText;
     [SerializeField] private TextMeshProUGUI displayNameText;
     [SerializeField] private Animator npcPortraitAnimator;
     [SerializeField] private Animator playerPortraitAnimator;
-
-    private Story currentStory;
-    public bool dialogueIsPlaying;
-
     [Header("Start and End Animations")]
     [SerializeField] private Animator startAnimation;
 
     [Header("Choices UI")]
     [SerializeField] private GameObject[] choices;
     private TextMeshProUGUI[] choicesText;
-    
+
     private static DialogueManager instance;
+    private Story currentStory;
+    public bool dialogueIsPlaying;
+    private Coroutine displayLineCoroutine;
+    private bool canContinueToNextLine = false;
+    private float startTimer = 0f;
 
     private const string SPEAKER_TAG = "speaker";
     private const string NPC_PORTRAIT_TAG = "npcportrait";
@@ -58,7 +64,7 @@ public class DialogueManager : MonoBehaviour
         choicesText = new TextMeshProUGUI[choices.Length];
 
         int index = 0;
-        foreach(GameObject choice in choices) 
+        foreach (GameObject choice in choices)
         {
             choicesText[index] = choice.GetComponentInChildren<TextMeshProUGUI>();
             index++;
@@ -67,24 +73,31 @@ public class DialogueManager : MonoBehaviour
 
     private void Update()
     {
-        if (!dialogueIsPlaying) 
+        if (!dialogueIsPlaying)
         {
             return;
         }
 
         if (Input.GetKeyDown("space"))
-        {
-            ContinueStory();
-        }
+            if (canContinueToNextLine
+                && currentStory.currentChoices.Count == 0
+                && Input.GetKeyDown("space"))
+            {
+                ContinueStory();
+            }
     }
 
     public void EnterDialogueMode(TextAsset inkJSON)
     {
+        
         currentStory = new Story(inkJSON.text);
         dialogueIsPlaying = true;
         dialoguePanel.SetActive(true);
+        startAnimation.Play("StartDialogue");
 
+      
         ContinueStory();
+           
     }
 
     private IEnumerator ExitDialogueMode()
@@ -100,22 +113,29 @@ public class DialogueManager : MonoBehaviour
     {
         if (currentStory.canContinue)
         {
+            if (displayLineCoroutine != null)
+            {
+                StopCoroutine(displayLineCoroutine);
+            }
+            displayLineCoroutine = StartCoroutine(DisplayLine(currentStory.Continue()));
             //Set text for current Dialogue line
-            dialogueText.text = currentStory.Continue();
-            // Display choices, if any, for this dialogue line
-            
-            DisplayChoices();
+
+
             HandleTags(currentStory.currentTags);
         }
         else
         {
             StartCoroutine(ExitDialogueMode());
         }
+
+
+
     }
 
     private void DisplayChoices()
     {
         List<Choice> currentChoices = currentStory.currentChoices;
+       // startAnimation.Play("PlayerDialogue");
 
         // Defencive check if UI can support the number of choices coming in
         if (currentChoices.Count > choices.Length)
@@ -158,16 +178,20 @@ public class DialogueManager : MonoBehaviour
     public void MakeChoice(int choiceIndex)
     {
         currentStory.ChooseChoiceIndex(choiceIndex);
+        if (canContinueToNextLine)
+        {
+            currentStory.ChooseChoiceIndex(choiceIndex);
+        }
     }
 
     private void HandleTags(List<string> currentTags)
     {
-        foreach(string tag in currentTags)
+        foreach (string tag in currentTags)
         {
             string[] splitTag = tag.Split(':');
-            if(splitTag.Length < 2 ) 
+            if (splitTag.Length < 2)
             {
-                Debug.LogError("Wrong tag: " + tag );
+                Debug.LogError("Wrong tag: " + tag);
             }
 
             string tagKey = splitTag[0].Trim();
@@ -176,7 +200,7 @@ public class DialogueManager : MonoBehaviour
             switch (tagKey)
             {
                 case SPEAKER_TAG:
-                    
+
                     displayNameText.text = tagValue;
                     break;
 
@@ -195,12 +219,31 @@ public class DialogueManager : MonoBehaviour
                 default:
                     Debug.LogWarning("Tag came in but not being handled: " + tag);
                     break;
-                    
+
             }
 
         }
 
-       
+
+
+    }
+
+    private IEnumerator DisplayLine(string line)
+    {
+        dialogueText.text = "";
+        canContinueToNextLine = false;
+
+        foreach (char letter in line.ToCharArray())
+        {
+            dialogueText.text += letter;
+
+            yield return new WaitForSeconds(typingSpeed);
+        }
+
+
+        DisplayChoices();
+
+        canContinueToNextLine = true;
 
     }
 
