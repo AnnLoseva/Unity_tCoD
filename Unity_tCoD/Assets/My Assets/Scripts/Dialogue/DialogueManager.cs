@@ -135,7 +135,6 @@ public class DialogueManager : MonoBehaviour
     private void DisplayChoices()
     {
         List<Choice> currentChoices = currentStory.currentChoices;
-       // startAnimation.Play("PlayerDialogue");
 
         // Defencive check if UI can support the number of choices coming in
         if (currentChoices.Count > choices.Length)
@@ -177,7 +176,6 @@ public class DialogueManager : MonoBehaviour
 
     public void MakeChoice(int choiceIndex)
     {
-        currentStory.ChooseChoiceIndex(choiceIndex);
         if (canContinueToNextLine)
         {
             currentStory.ChooseChoiceIndex(choiceIndex);
