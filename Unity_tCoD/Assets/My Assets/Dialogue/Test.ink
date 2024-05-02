@@ -1,6 +1,7 @@
 ->main
 
 ===main===
+#layout:StartDialogue
 #speaker:Mike #npcportrait:Neutral_Rooth 
 Hi! Do you wanna play? 
     #layout:PlayerDialogue

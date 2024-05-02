@@ -93,7 +93,7 @@ public class DialogueManager : MonoBehaviour
         currentStory = new Story(inkJSON.text);
         dialogueIsPlaying = true;
         dialoguePanel.SetActive(true);
-        startAnimation.Play("StartDialogue");
+        //startAnimation.Play("StartDialogue");
 
       
         ContinueStory();
